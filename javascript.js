@@ -17,6 +17,7 @@ const cdThumb = $(".cd-thumb");
 const audio = $("#audio");
 const playBtn = $(".btn-toggle-play");
 const player = $(".player");
+const progress = $("#progress");
 
 const app = {
   currentIndex: 0,
@@ -91,6 +92,17 @@ const app = {
 
   handleEvents: function () {
     const _this = this;
+
+    // Xử lý CD quay
+    const cdThumbAnimate = cdThumb.animate([
+      { transform: "rotate(360deg)" }
+    ], 
+    {
+      duration: 10000,
+      iterations: Infinity,
+    });
+    cdThumbAnimate.pause(); 
+
     // Xử lý phóng to thu nhỏ CD
     const cdWidth = cd.offsetWidth;
     document.onscroll = function () {
@@ -103,14 +115,37 @@ const app = {
     // Xử lý khi play
     playBtn.onclick = function () {
       if (_this.isPlaying) {
-        _this.isPlaying = false;
         audio.pause();
-        player.classList.remove("playing");
       } else {
-        _this.isPlaying = true;
         audio.play();
-        player.classList.add("playing");
       }
+    };
+
+    // Khi song được play
+    audio.onplay = function () {
+      _this.isPlaying = true;
+      player.classList.add("playing");
+      cdThumbAnimate.play();
+    };
+    // Khi song bị pause
+    audio.onpause = function () {
+      _this.isPlaying = false;
+      player.classList.remove("playing");
+      cdThumbAnimate.pause();
+    };
+
+    // Khi tiến độ bài hát thay đổi
+    audio.ontimeupdate = function () {
+      const progressPercent = Math.floor(
+        (audio.currentTime / audio.duration) * 100
+      );
+      progress.value = progressPercent;
+    };
+
+    // Xử lý khi tua
+    progress.oninput = function (e) {
+      const seekTime = (audio.duration * e.target.value) / 100;
+      audio.currentTime = seekTime;
     };
   },
 
@@ -121,7 +156,6 @@ const app = {
   },
 
   start: function () {
-    this.getCurrentSong();
     // Lắng nghe xử lý các sự kiện
     this.handleEvents();
     // Tải thông tin bài hát đầu tiên
