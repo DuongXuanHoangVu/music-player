@@ -11,6 +11,7 @@
 
 const $ = document.querySelector.bind(document);
 const $$ = document.querySelectorAll.bind(document);
+
 const cd = $(".cd");
 const heading = $("header h2");
 const cdThumb = $(".cd-thumb");
@@ -21,11 +22,13 @@ const progress = $("#progress");
 const nextBtn = $(".btn-next");
 const prevBtn = $(".btn-prev");
 const randomBtn = $(".btn-random");
+const repeatBtn = $(".btn-repeat");
 
 const app = {
   currentIndex: 0,
   isPlaying: false,
   isRandom: false,
+  isRepeat: false,
   songs: [
     {
       name: "Lửng lơ",
@@ -183,6 +186,21 @@ const app = {
     randomBtn.onclick = function () {
       _this.isRandom = !_this.isRandom;
       randomBtn.classList.toggle("active", _this.isRandom);
+    };
+
+    // Xử lý phát lại 1 bài khi repeat
+    repeatBtn.onclick = function() {
+      _this.isRepeat =!_this.isRepeat;
+      repeatBtn.classList.toggle("active", _this.isRepeat);
+    },
+
+    // Xử lý next song khi end
+    audio.onended = function () {
+      if (_this.isRepeat) {
+        audio.play()
+      } else {
+        nextBtn.click();
+      }
     };
   },
 
