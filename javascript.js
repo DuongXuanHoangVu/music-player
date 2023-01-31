@@ -12,6 +12,9 @@
 const $ = document.querySelector.bind(document);
 const $$ = document.querySelectorAll.bind(document);
 
+const MUSIC_PLAYER_KEY = "MUSIC_KEY"
+
+const playlist = $(".playlist");
 const cd = $(".cd");
 const heading = $("header h2");
 const cdThumb = $(".cd-thumb");
@@ -29,6 +32,11 @@ const app = {
   isPlaying: false,
   isRandom: false,
   isRepeat: false,
+  config: JSON.parse(localStorage.getItem(MUSIC_PLAYER_KEY)) || {},
+  setConfig: function (key,value) {
+    this.config[key] = value;
+    localStorage.setItem(MUSIC_PLAYER_KEY, JSON.stringify(this.config))
+  },
   songs: [
     {
       name: "Lửng lơ",
@@ -75,9 +83,9 @@ const app = {
   ],
 
   render: function () {
-    const htmls = this.songs.map((song) => {
+    const htmls = this.songs.map((song, index) => {
       return `
-            <div class="song">
+            <div class="song ${index === this.currentIndex ? 'active' : ''}" data-index="${index}">
             <div class="thumb" style="background-image: url('${song.image}')">
             </div>
             <div class="body">
@@ -90,7 +98,7 @@ const app = {
         </div>
             `;
     });
-    $(".playlist").innerHTML = htmls.join("");
+    playlist.innerHTML = htmls.join("");
   },
 
   getCurrentSong: function () {
@@ -170,6 +178,8 @@ const app = {
         _this.nextSong();
       }
       audio.play();
+      _this.render()
+      _this.scrollActiveSongtoTop()
     };
 
     // Prev song
@@ -180,18 +190,22 @@ const app = {
         _this.prevSong();
       }
       audio.play();
+      _this.render()
+      _this.scrollActiveSongtoTop()
     };
 
     // Random song
     randomBtn.onclick = function () {
       _this.isRandom = !_this.isRandom;
       randomBtn.classList.toggle("active", _this.isRandom);
+      _this.setConfig('isRandom', _this.isRandom);
     };
 
     // Xử lý phát lại 1 bài khi repeat
     repeatBtn.onclick = function() {
       _this.isRepeat =!_this.isRepeat;
       repeatBtn.classList.toggle("active", _this.isRepeat);
+      _this.setConfig('isRepeat', _this.isRepeat);
     },
 
     // Xử lý next song khi end
@@ -202,6 +216,34 @@ const app = {
         nextBtn.click();
       }
     };
+
+    // xử lý active khi click vào 1 bài hát
+    playlist.onclick = function (e) {
+      const songNode = e.target.closest('.song:not(.active)')
+      if (songNode || e.target.closest('.option')) {
+        // Khi click  vào 1 bài hát
+        if (songNode) {
+          _this.currentIndex = Number(songNode.dataset.index)
+          _this.loadCurrentSong()
+          _this.render()
+          audio.play()
+        }
+
+        // Khi click vào nút option
+      }
+    }
+  },
+
+  scrollActiveSongtoTop: function () {
+    $('.song.active').scrollIntoView({
+      behavior:'smooth',
+      block: 'nearest',
+    })
+  },
+
+  loadConfig: function () {
+    this.isRandom = this.config.isRandom;
+    this.isRepeat = this.config.isRepeat;
   },
 
   loadCurrentSong: function () {
@@ -237,12 +279,17 @@ const app = {
   },
 
   start: function () {
+    this.loadConfig();
     // Lắng nghe xử lý các sự kiện
     this.handleEvents();
     // Tải thông tin bài hát đầu tiên
     this.loadCurrentSong();
     // Render playlist
     this.render();
+
+    // Hiển thị trạng thái ban đầu của nút Repeat và random
+    randomBtn.classList.toggle("active", this.isRandom);
+    repeatBtn.classList.toggle("active", this.isRepeat);
   },
 };
 
