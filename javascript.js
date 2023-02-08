@@ -80,6 +80,12 @@ const app = {
       path: "./assets/music/song7.mp3",
       image: "./assets/image/song7.jpg",
     },
+    {
+      name: "Dạ Khúc",
+      singer: "Châu Kiệt Luân",
+      path: "./assets/music/song8.mp3",
+      image: "./assets/image/song8.jpg",
+    }
   ],
 
   render: function () {
@@ -104,14 +110,6 @@ const app = {
   getCurrentSong: function () {
     return this.songs[this.currentIndex];
   },
-
-  // defineProperties: function( ) {
-  //   Object.defineProperty(this, 'currentSong', {
-  //     get: function() {
-  //       return this.songs[this.currentIndex];
-  //     }
-  //   })
-  // },
 
   handleEvents: function () {
     const _this = this;
